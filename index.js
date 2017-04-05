@@ -19,6 +19,8 @@ var thetaLoc;
  
 var Tx = 0, Ty = 0, Tz = 0.0;
 var translation;
+var scaleLoc;
+var scale;
 var projectionMatrixLoc;
 var modelViewMatrixLoc;
 
@@ -32,7 +34,7 @@ window.onload = function init()
     colorCube();
 
     gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+    gl.clearColor( 0.0, 0.0, 0.0, 0.0 );
     
     gl.enable(gl.DEPTH_TEST);
 
@@ -55,7 +57,6 @@ window.onload = function init()
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
     
-
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
@@ -63,6 +64,7 @@ window.onload = function init()
     thetaLoc = gl.getUniformLocation(program, "theta"); 
     
 	translationLoc = gl.getUniformLocation(program, "translation"); 
+	scaleLoc = gl.getUniformLocation(program, "scale");
     modelViewMatrixLoc = gl.getUniformLocation(program, 'modelView');
 	projectionMatrixLoc = gl.getUniformLocation(program, 'projection');
         
@@ -95,12 +97,12 @@ function quad(a, b, c, d)
 
     var vertexColors = [
         [ 0.0, 0.0, 0.0, 1.0 ],  // black
-        [ 1.0, 0.0, 0.0, 1.0 ],  // red
+        [ 0.0, 1.0, 1.0, 1.0 ],  //cyan		
         [ 1.0, 1.0, 0.0, 1.0 ],  // yellow
         [ 0.0, 1.0, 0.0, 1.0 ],  // green
         [ 0.0, 0.0, 1.0, 1.0 ],  // blue
         [ 1.0, 0.0, 1.0, 1.0 ],  // magenta
-        [ 0.0, 1.0, 1.0, 1.0 ],  // cyan
+        [ 1.0, 0.0, 0.0, 1.0 ],  // red
         [ 1.0, 1.0, 1.0, 1.0 ]   // white
     ];
 
@@ -115,13 +117,11 @@ function quad(a, b, c, d)
     for ( var i = 0; i < indices.length; ++i ) {
         points.push( vertices[indices[i]] );
         //colors.push( vertexColors[indices[i]] );
-    
         // for solid colored faces use 
         colors.push(vertexColors[a]);
         
     }
-	
-	
+	 
 }
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0,1.0,0.0);
@@ -135,13 +135,16 @@ var radius = 10;
 var theta  = 2*Math.PI/36;
 var phi  = 2*Math.PI/36;
 var mx = 0; my = 0; mz = 0 ;
- var Tx = 0.5, Ty = 0.5, Tz = 1.0, t4 = 5;
+var Tx = 0.5, Ty = 0.5, Tz = 1.0, 
+t4 = 4; // size of the playground
 function render()
 {
+
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
 	
 	at = vec3(mx,my,mz);
-	 
+	up = vec3(0.0,1.0,0.0); 
 	eye = vec3(radius * Math.sin(theta) * Math.cos(phi),
 				radius * Math.sin(theta) * Math.sin(phi),
 				radius * Math.cos(phi)
@@ -150,7 +153,6 @@ function render()
 	eye = vec3(0.0,0.0,0.0);
 	
 	modelViewMatrix = lookAt(eye, at, up);
-	
 	projectionMatrix = ortho(left, right, bottom, ytop, near, far);
 	gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
@@ -164,44 +166,114 @@ function render()
 	Tx -= 0.001;
 	t4 -= 0.009; 
 	
- 	gl.uniform4f(translationLoc, Tx, Ty, 0.0, t4);
+	gl.uniform4f(scaleLoc, 0.5, 1.5, 0.5, 1.5);	
+ 	gl.uniform4f(translationLoc, Tx, Ty, 0.0, t4+0.5);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
 	
+    gl.uniform4f(scaleLoc, 0.5, 1.0, 0.5, 1.5);	
 	gl.uniform4f(translationLoc, Tx+0.5, Ty, 0.0, t4-2.25);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
-	
-	gl.uniform4f(translationLoc, Tx-2.0, Ty, 0.0, t4-2.25);
+/*	
+		
+	gl.uniform4f(scaleLoc, 0.5, 1.5, 0.5, 1.5);	
+	gl.uniform4f(translationLoc, Tx+1.0, Ty, 0.0, t4+1.0);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
 	
-	gl.uniform4f(translationLoc, Tx-1.8, Ty, 0.0, t4-1.25);
-	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
-	
+	gl.uniform4f(scaleLoc, 0.5, 1.5, 0.5, 1.5);	
 	gl.uniform4f(translationLoc, Tx+1.5, Ty, 0.0, t4-1.0);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
-	
-	gl.uniform4f(translationLoc, Tx+3.5, Ty, 0.0, t4+0.9);
-	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
-	
+
+	gl.uniform4f(scaleLoc, 0.5, 1.0, 0.5, 1.5);	
 	gl.uniform4f(translationLoc, Tx+2.5, Ty, 0.0, t4+1.25);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
 	
-	gl.uniform4f(translationLoc, Tx+1.0, Ty, 0.0, t4+1.0);
+    gl.uniform4f(scaleLoc, 0.5, 1.5, 0.5, 1.5);		
+	gl.uniform4f(translationLoc, Tx+3.5, Ty, 0.0, t4+0.9);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
 
-	gl.uniform4f(translationLoc, Tx-3.5, Ty, 0.0, t4+0.9);
+	gl.uniform4f(scaleLoc, 0.5, 1.5, 0.5, 1.5);	
+	gl.uniform4f(translationLoc, Tx-1.0, Ty, 0.0, t4+1.0);
+	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );	
+	
+	gl.uniform4f(scaleLoc, 0.5, 1.0, 0.5, 1.5);	
+	gl.uniform4f(translationLoc, Tx-1.8, Ty, 0.0, t4-1.25);
+	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
+
+	gl.uniform4f(scaleLoc, 0.5, 1.0, 0.5, 1.5);	
+	gl.uniform4f(translationLoc, Tx-2.0, Ty, 0.0, t4-2.25);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
 	
+
+	gl.uniform4f(scaleLoc, 0.5, 1.0, 0.5, 1.5);	
 	gl.uniform4f(translationLoc, Tx-2.5, Ty, 0.0, t4+1.25);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
 	
-	gl.uniform4f(translationLoc, Tx-1.0, Ty, 0.0, t4+1.0);
+	gl.uniform4f(scaleLoc, 0.5, 1.0, 0.5, 1.5);	
+	gl.uniform4f(translationLoc, Tx-3.5, Ty, 0.0, t4+0.9);
 	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
-		
+
+*/	
+	/*(
+	at = vec3(1.0, -0.5, 0.0);
+	up = vec3(-1.0,-1.0,0.0);
+    modelViewMatrix = lookAt(eye, at, up);
+	projectionMatrix = ortho(left, right, bottom, ytop, near, far);
+	gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 	
+	gl.uniform4f(scaleLoc, 10.5, 1.005, 1.5, 0);	
+	gl.uniform4f(translationLoc, Tx-3.0, Ty-0.5, 0.0, t4);
+	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );	
+	*/
+
+	
+	at = vec3(mx,-1.0,0.0);
+	up = vec3(0.0,1.0,0.0); 
+	modelViewMatrix = lookAt(eye, at, up);
+	projectionMatrix = ortho(left, right, bottom, ytop, near, far);
+	gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+	
+	
+	gl.uniform4f(scaleLoc, 0.003, 0.003, -0.009, 0.1);	
+	gl.uniform4f(translationLoc, 0.0, 0.0, 0.0, -0.09);
+	gl.drawArrays( gl.TRIANGLES, 0, NumVertices );	
+	
+    
+	/*
+	detectcollision(Tx, t4, Tx-2.5, t4 + 1.25);   
+	detectcollision(Tx, t4, Tx-2.0, t4 - 2.25);   
+	detectcollision(Tx, t4, Tx+1.8, t4 + 1.25); 
+/*	
+	detectcollision(Tx, t4, Tx-3.5, t4 - 1.25);   
+	detectcollision(Tx, t4, Tx-3,5, t4 + 0.9);   
+	detectcollision(Tx, t4, Tx+0.5, t4 ); 
+	detectcollision(Tx, t4, Tx+1.0, t4 );   
+	detectcollision(Tx, t4, Tx+1.5, t4 );   
+	detectcollision(Tx, Tx, Tx+2.5, t4 );   
+	detectcollision(Tx, t4, Tx+3.5, t4 );   
+*/	
+    
+	detectcollision(Math.round(Tx * 100) / 100, Math.round(t4 * 100) / 100, 0.0, 2.15 );   
+	detectcollision(Math.round(Tx * 10) / 10, Math.round(t4 * 10) / 10, -0.5, 0.5);   
     requestAnimFrame( render );
+	
 }
 
 
+function detectcollision(x1,y1,x2,y2){
+//	console.log(y1,y2);
+
+if(y1 == y2){
+console.log("Hit Distance");
+	console.log(x1,x2);
+
+ if(x1 > x2 && x1 < (x2 + 0.3)){
+console.log("Collision Detected");
+exit();
+}
+}
+}
    	
 document.addEventListener("keydown", function (KeyboardEvent){
 var key=KeyboardEvent.keyCode;
@@ -212,6 +284,7 @@ if(key==37){
 if(key==39){
    Tx -= 0.1;
    mz += 0.001;
+   
 }
 
 if(key==38){
@@ -221,6 +294,7 @@ if(key==38){
 if(key==40){
    Ty -= 0.1;
 }
+
 
 });	
 

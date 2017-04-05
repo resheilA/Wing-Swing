@@ -3,10 +3,12 @@
 <script id="vertex-shader" type="x-shader/x-vertex">
 
 attribute  vec4 vPosition;
+attribute vec4 vPosition1;
 attribute  vec4 vColor;
 varying vec4 fColor;
 
 uniform vec4 translation;
+uniform vec4 scale;
 
 uniform vec3 theta;
 uniform mat4 modelView;
@@ -20,27 +22,12 @@ void main()
     vec3 c = cos( angles );
     vec3 s = sin( angles );
 
-    // Remeber: thse matrices are column-major
-   mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
-		    0.0,  c.x,  s.x, 0.0,
-		    0.0, -s.x,  -c.x, 0.0,
-		    0.0,  0.0,  0.0, 1.0 );
-
-    mat4 ry = mat4( c.y, 0.0, -s.y, 0.0,
-		    0.0, 1.0,  0.0, 0.0,
-		    s.y, 0.0,  -c.y, 0.0,
-		    0.0, 0.0,  0.0, 1.0 );
-
-
-    mat4 rz = mat4( c.z, -s.z, 0.0, 0.0,
-		    s.z,  c.z, 0.0, 0.0,
-		    0.0,  0.0, 1.0, 0.0,
-		    0.0,  0.0, 0.0, 1.0 );
-	
+ 
 
     fColor = vColor;
 	
-    gl_Position = projection * modelView * vPosition + translation;
+    gl_Position =    projection * modelView * (scale * vPosition)  + translation   ;
+	
 } 
 </script>
 
@@ -63,7 +50,7 @@ main()
 <script type="text/javascript" src="index.js"></script>
 
 <body>
-<canvas id="gl-canvas" width="912" height="512" style='border:1px solid black;'>
+<canvas id="gl-canvas" width="912" height="512" style='border:1px solid black;background-color:black;' bgcolor='black'>
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
    
